@@ -3,6 +3,8 @@
 #import <Cordova/CDVPluginResult.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
+#define CDV_PHOTO_PREFIX @"ios_tmp_img"
+
 static NSInteger count = 0;
 
 @implementation CordovaRotateImage {
@@ -31,7 +33,7 @@ static NSInteger count = 0;
     if (! [[NSFileManager defaultManager] fileExistsAtPath:cachesDirectory isDirectory:&isDir] && isDir == NO) {
         [[NSFileManager defaultManager] createDirectoryAtPath:cachesDirectory withIntermediateDirectories:NO attributes:nil error:&error];
     }
-    NSString *imagePath =[cachesDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"img%d.jpeg", count]];
+    NSString* imagePath = [self tempFilePath];
     count++;
     CDVPluginResult* result = nil;
     if(![imageData writeToFile:imagePath atomically:NO]) {
@@ -41,6 +43,27 @@ static NSInteger count = 0;
     }
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 
+}
+
+- (NSString*)tempFilePath
+{
+    NSString* docsPath = [NSTemporaryDirectory()stringByStandardizingPath];
+    NSFileManager* fileMgr = [[NSFileManager alloc] init]; // recommended by Apple (vs [NSFileManager defaultManager]) to be threadsafe
+    NSString* filePath;
+    NSString* extension = @"jpeg";
+
+    // generate unique file name
+    NSInteger tmpInt = [self randomValueBetween:1 and:999];
+    NSLog(@"Random int %d", tmpInt);
+    do {
+        filePath = [NSString stringWithFormat:@"%@/%@%03d.%@", docsPath, CDV_PHOTO_PREFIX, tmpInt, extension];
+    } while ([fileMgr fileExistsAtPath:filePath]);
+    
+    return filePath;
+}
+
+- (NSInteger)randomValueBetween:(NSInteger)min and:(NSInteger)max {
+    return (NSInteger)(min + arc4random_uniform(max - min + 1));
 }
 
 - (UIImage *)scaleAndRotateImage:(UIImage *) image {
