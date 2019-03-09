@@ -163,16 +163,17 @@ public class CordovaRotateImage extends CordovaPlugin {
     }
 
     private Uri saveFile(Bitmap bitmap) {
-        File folder = null;
-        if (folderName == null) {
-            folder = new File(this.getTempDirectoryPath());
-        } else {
-            if (folderName.contains("/")) {
-                folder = new File(folderName.replace("file://", ""));
-            } else {
-                folder = new File(Environment.getExternalStorageDirectory() + "/" + folderName);
-            }
-        }
+        private Uri saveFile(Bitmap bitmap) {
+        File folder = new File(this.getTempDirectoryPath());
+//        if (folderName == null) {
+//            folder = new File(this.getTempDirectoryPath());
+//        } else {
+//            if (folderName.contains("/")) {
+//                folder = new File(folderName.replace("file://", ""));
+//            } else {
+//                folder = new File(Environment.getExternalStorageDirectory() + "/" + folderName);
+//            }
+//        }
         boolean success = true;
         if (!folder.exists()) {
             success = folder.mkdir();
@@ -193,6 +194,7 @@ public class CordovaRotateImage extends CordovaPlugin {
             return Uri.fromFile(file);
         }
         return null;
+    }
     }
 
     private String getTempDirectoryPath() {
