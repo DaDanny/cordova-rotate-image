@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.text.SimpleDateFormat;
+
 
 
 /**
@@ -37,6 +39,7 @@ public class CordovaRotateImage extends CordovaPlugin {
     private PluginResult result;
     private String folderName;
     private String fileName;
+    private static final String TIME_FORMAT = "yyyyMMdd_HHmmss";
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -58,7 +61,7 @@ public class CordovaRotateImage extends CordovaPlugin {
                callbackContext.sendPluginResult(result);
             } catch (IOException e) {
                 Log.d("image err", e.toString());
-                result = new PluginResult(PluginResult.Status.ERROR, "hello world!");
+                result = new PluginResult(PluginResult.Status.ERROR, "Rotate Image Error!" + e.toString());
                 callbackContext.sendPluginResult(result);
             }
         } else {
@@ -163,24 +166,17 @@ public class CordovaRotateImage extends CordovaPlugin {
     }
 
     private Uri saveFile(Bitmap bitmap) {
-        private Uri saveFile(Bitmap bitmap) {
         File folder = new File(this.getTempDirectoryPath());
-//        if (folderName == null) {
-//            folder = new File(this.getTempDirectoryPath());
-//        } else {
-//            if (folderName.contains("/")) {
-//                folder = new File(folderName.replace("file://", ""));
-//            } else {
-//                folder = new File(Environment.getExternalStorageDirectory() + "/" + folderName);
-//            }
-//        }
         boolean success = true;
         if (!folder.exists()) {
             success = folder.mkdir();
         }
 
         if (success) {
-            fileName = System.currentTimeMillis() + ".jpg";
+            String timeStamp = new SimpleDateFormat(TIME_FORMAT).format(new Date());
+            Log.d("File timeStamp: ", timeStamp);
+            fileName = "IMG_" + timeStamp + ".jpg";
+            Log.d("File Name: ", fileName);
             File file = new File(folder, fileName);
             if (file.exists()) file.delete();
             try {
@@ -195,15 +191,15 @@ public class CordovaRotateImage extends CordovaPlugin {
         }
         return null;
     }
-    }
 
     private String getTempDirectoryPath() {
         File cache = null;
 
         // SD Card Mounted
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            cache = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                    "/Android/data/" + cordova.getActivity().getPackageName() + "/cache/");
+            cache = cordova.getActivity().getExternalCacheDir();
+            // cache = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
+            //         "/Android/data/" + cordova.getActivity().getPackageName() + "/cache/");
         } else {
             // Use internal storage
             cache = cordova.getActivity().getCacheDir();
